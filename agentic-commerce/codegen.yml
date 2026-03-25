@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=
+overwrite: true
+schema: ./schema.graphql
+documents: src/graphql/queries/**/*.gql.ts
+generates:
+  src/graphql/generated/catalog.types.ts:
+    documents: src/graphql/queries/catalog.gql.ts
+    plugins:
+      - typescript
+      - typescript-operations
+    config:
+      skipTypename: true
+      avoidOptionals: false

@@ -1,0 +1,144 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# gql-mcp configuration
+# Run with: npx ts-node src/cli.ts ./mcp-config.yaml
+#           or: node dist/cli.js ./mcp-config.yaml
+# ─────────────────────────────────────────────────────────────────────────────
+
+server_info:
+  name: xapi-mcp
+  version: 0.1.0
+  title: Tesco xAPI MCP Server
+
+# ── GraphQL endpoint ──────────────────────────────────────────────────────────
+# Your GraphQL gateway URL.
+# Use ${env.VAR_NAME} to pull from environment variables.
+endpoint: 'https://origin-ppe1-xapi-gateway.omnichannel.tescocloud.com/graphiql'
+# endpoint: http://localhost:4000/graphql   # ← uncomment for local dev
+
+# ── Static headers ────────────────────────────────────────────────────────────
+# Added to every outbound GraphQL request.
+# Useful for API keys and service-to-service auth tokens.
+headers:
+  x-client-name: gql-mcp
+  # Authorization: Bearer ${env.SERVICE_TOKEN}   # ← uncomment if your GQL needs a token
+
+# ── Header forwarding ─────────────────────────────────────────────────────────
+# Headers from the inbound MCP request to forward to the GraphQL endpoint.
+# Only listed headers are forwarded — everything else is blocked.
+# Add traceparent here to get end-to-end distributed traces.
+forward_headers:
+  - authorization
+  - x-tesco-uid
+  - x-tesco-store-id
+  - traceparent
+  - tracestate
+
+# ── Transport ─────────────────────────────────────────────────────────────────
+transport:
+  type: streamable_http # or: stdio
+  port: 3000
+  address: localhost
+
+  cors:
+    origins:
+      - http://localhost:6274 # MCP Inspector default port
+      - http://localhost:3001 # your local dev frontend if needed
+
+  # Auth — disabled for local dev, enable when deploying
+  # auth:
+  #   enabled: true
+  #   issuers:
+  #     - https://login.microsoftonline.com/${env.AZURE_TENANT_ID}/v2.0
+  #   audience: ${env.API_AUDIENCE}
+  #   scopes:
+  #     required:
+  #       - xapi:read
+  #   allow_anonymous_tools:
+  #     - searchProducts
+  #     - getProductById
+
+# ── Schema ────────────────────────────────────────────────────────────────────
+schema:
+  source: local
+  path: ./schema.graphql # path to your SDL file
+
+  # Introspection mode (coming in M2):
+  # source: introspect
+  # introspect_url: ${env.GRAPHQL_ENDPOINT}
+  # introspect_headers:
+  #   authorization: Bearer ${env.SERVICE_TOKEN}
+
+# ── Operations ────────────────────────────────────────────────────────────────
+# Directories containing .graphql operation files.
+# Each file = one MCP tool. Subdirectories are scanned recursively.
+operations:
+  dirs:
+    - ./operations
+
+# ── Overrides ─────────────────────────────────────────────────────────────────
+overrides:
+  # 'none'     — mutations are skipped (safe default for read-only agents)
+  # 'explicit' — mutations are included as tools
+  mutation_mode: explicit
+
+  # Override auto-generated tool descriptions.
+  # Key = operation name (must match the query/mutation name in your .graphql file).
+  # descriptions:
+  #   getProductById: "Fetch full product details by SKU or internal product ID"
+  #   searchProducts: "Search the product catalogue by keyword, category, or filters"
+
+# ── Custom scalars ────────────────────────────────────────────────────────────
+# Map unknown GraphQL scalars to JSON Schema types.
+# Without this, unknown scalars fall back to 'string' with a warning.
+custom_scalars:
+  DateTime:
+    type: string
+    format: date-time
+    description: ISO 8601 date-time string (e.g. "2024-01-15T09:30:00Z")
+  Date:
+    type: string
+    format: date
+    description: ISO 8601 date string (e.g. "2024-01-15")
+  JSON:
+    type: object
+    description: Arbitrary JSON object
+  Long:
+    type: integer
+    description: 64-bit integer
+  URL:
+    type: string
+    format: uri
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+logging:
+  level: info # debug | info | warn | error
+  format: pretty # pretty (local dev) | json (production)
+  redact:
+    - headers.authorization
+    - headers.x-tesco-uid
+
+# ── Telemetry ─────────────────────────────────────────────────────────────────
+# Disabled by default. Uncomment to enable OTLP export to New Relic.
+# telemetry:
+#   enabled: true
+#   service_name: xapi-mcp
+#   service_version: 0.1.0
+#   exporters:
+#     tracing:
+#       otlp:
+#         enabled: true
+#         endpoint: ${env.OTEL_EXPORTER_OTLP_ENDPOINT}
+#         protocol: http/protobuf
+#         headers:
+#           api-key: ${env.NEW_RELIC_LICENSE_KEY}
+#     metrics:
+#       otlp:
+#         enabled: true
+#         endpoint: ${env.OTEL_EXPORTER_OTLP_ENDPOINT}
+#         protocol: http/protobuf
+#         temporality: delta
+
+# ── Health check ──────────────────────────────────────────────────────────────
+health_check:
+  enabled: true
+  path: /health

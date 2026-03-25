@@ -1,0 +1,161 @@
+# Search for products by keyword, category, or other criteria.
+# Use this when you don't have an exact SKU and need to discover products.
+#
+# Arguments:
+#   query (required): Search term (e.g., "milk", "organic vegetables")
+#   limit (optional): Number of results to return, defaults to 10, max 100
+#   page (optional): Page for which you need products
+#
+# Returns: List of matching products with basic details
+
+query SearchProducts(
+  # Search keyword — product name, description, or barcode
+  $query: String!
+  $page: Int
+  # Maximum number of results to return (default: 24, max: 50)
+  $count: Int
+) {
+  search(query: $query, page: $page, count: $count) {
+    pageInformation: info {
+      ...PageInformation
+    }
+    productItems: products {
+      ...ProductItem
+    }
+    facetLists: facetGroups {
+      ...FacetLists
+    }
+    options {
+      sortBy
+    }
+  }
+}
+
+fragment PageInformation on ListInfoInterface {
+  totalCount: total
+  pageNo: page
+  count
+  pageSize
+  offset
+}
+
+fragment ProductItem on ProductInterface {
+  __typename
+  id
+  baseProductId
+  subBrand
+  title
+  brandName
+  shortDescription
+  defaultImageUrl
+  superDepartmentId
+  superDepartmentName
+  departmentId
+  departmentName
+  aisleId
+  aisleName
+  shelfId
+  shelfName
+  displayType
+  productType
+  averageWeight
+  bulkBuyLimit
+  maxQuantityAllowed: bulkBuyLimit
+  groupBulkBuyLimit
+  bulkBuyLimitMessage
+  bulkBuyLimitGroupId
+  timeRestrictedDelivery
+  restrictedDelivery
+  isForSale
+  isNew
+  isRestrictedOrderAmendment
+  status
+  maxWeight
+  minWeight
+  increment
+  catchWeightList {
+    price
+    weight
+    default
+  }
+  restrictedDeliveryTime {
+    day
+    startDateTime
+    endDateTime
+    message
+  }
+  restrictedDeliveryDate {
+    startDate
+    endDate
+    leadTimeValue
+    message
+  }
+  price {
+    price: actual
+    unitPrice
+    unitOfMeasure
+  }
+  promotions {
+    promotionId: id
+    promotionType
+    startDate
+    endDate
+    offerText: description
+  }
+  reviews {
+    stats {
+      noOfReviews
+      overallRating
+      overallRatingRange
+    }
+  }
+  substitutionOptions {
+    isBlocked
+  }
+  fulfilment {
+    __typename
+    ... on ProductDeliveryType {
+      cutoff
+      deliveryType
+      minDeliveryDays
+      maxDeliveryDays
+      charges {
+        value
+        __typename
+        criteria {
+          __typename
+          ... on ProductDeliveryCriteria {
+            deliveryType: type
+            deliveryvalue: value
+          }
+          ... on ProductDeliveryBasketValueCriteria {
+            type
+            value
+          }
+        }
+      }
+    }
+    ... on ProductReturnType {
+      __typename
+      daysToReturn
+    }
+  }
+  seller {
+    id
+    name
+    logo {
+      url
+    }
+  }
+}
+
+fragment FacetLists on ProductListFacetGroupInterface {
+  categoryId
+  category
+  facets {
+    facetId: id
+    facetName: name
+    binCount: count
+    isSelected: selected
+  }
+}

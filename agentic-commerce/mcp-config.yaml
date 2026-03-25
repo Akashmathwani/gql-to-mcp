@@ -1,0 +1,74 @@
+server_info:
+  name: agentic-commerce-mcp
+  version: 0.1.0
+  title: Tesco Commerce MCP Server (UCP)
+
+# ── GraphQL endpoint ──────────────────────────────────────────────────────────
+endpoint: '${env.GRAPHQL_ENDPOINT}'
+
+# ── Static headers ────────────────────────────────────────────────────────────
+headers:
+  x-client-name: agentic-commerce-mcp
+
+# ── Header forwarding ─────────────────────────────────────────────────────────
+forward_headers:
+  - authorization
+  - x-tesco-uid
+  - x-tesco-store-id
+  - traceparent
+  - tracestate
+  - traceId
+
+# ── Transport ─────────────────────────────────────────────────────────────────
+transport:
+  type: streamable_http
+  port: 3000
+  address: localhost
+
+  cors:
+    origins:
+      - http://localhost:6274 # MCP Inspector
+
+  # Auth — disabled for local dev; enable for production
+  # auth:
+  #   enabled: true
+  #   issuers:
+  #     - https://login.microsoftonline.com/${env.AZURE_TENANT_ID}/v2.0
+  #   audience: ${env.API_AUDIENCE}
+  #   allow_anonymous_tools:
+  #     - search_catalog
+
+# ── Schema ────────────────────────────────────────────────────────────────────
+# Disable GraphQL file-based tools for now — only UCP custom tools are active.
+# Uncomment schema + operations when you want to add .graphql operation tools.
+# schema:
+#   source: local
+#   path: ./schema.graphql
+
+# operations:
+#   dirs:
+#     - ./operations
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+telemetry:
+  enabled: true
+  service_name: tesco-xapi-mcp
+  service_version: 1.0.0
+  exporters:
+    tracing:
+      otlp:
+        endpoint: ${env.NEW_RELIC_OTLP_ENDPOINT}
+        headers:
+          api-key: ${env.NEW_RELIC_LICENSE_KEY}
+
+logging:
+  level: info
+  format: otel # switch to json on AKS
+  redact:
+    - headers.authorization
+    - jwt.sub
+
+# ── Health check ──────────────────────────────────────────────────────────────
+health_check:
+  enabled: true
+  path: /health

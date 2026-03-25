@@ -1,0 +1,20 @@
+{
+  "name": "gql-mcp-examples",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Examples for using gql-to-mcp",
+  "scripts": {
+    "dev": "gql-mcp ./mcp-config.yaml",
+    "start": "gql-mcp ./mcp-config.yaml",
+    "simple-custom": "ts-node --project tsconfig.json simple-custom-tool.ts",
+    "generate-openrpc": "ts-node --project tsconfig.json scripts/generate-openrpc.ts"
+  },
+  "dependencies": {
+    "gql-to-mcp": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.37",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.0"
+  }
+}
