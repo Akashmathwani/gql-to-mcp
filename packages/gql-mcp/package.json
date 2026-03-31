@@ -10,6 +10,7 @@
   "scripts": {
     "build": "tsc",
     "build:clean": "rm -rf dist && npm run build",
+    "clean": "rm -rf dist",
     "dev": "ts-node src/cli.ts",
     "lint": "eslint 'src/**/*.ts'",
     "lint:fix": "eslint 'src/**/*.ts' --fix",

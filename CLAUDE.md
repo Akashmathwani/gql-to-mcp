@@ -24,10 +24,27 @@ When the official catalog spec becomes available in the SDK, replace the hand-wr
 
 ## Repo Structure
 
-This is an **npm workspaces monorepo**. All shared dependencies are hoisted to the root `node_modules/` — this is intentional.
+This is a **Lerna-managed npm workspaces monorepo**. All shared dependencies are hoisted to the root `node_modules/` — this is intentional.
 
 Workspaces:
 
-- `packages/*` — core libraries
-- `agentic-commerce` — agentic commerce MCP server
+- `packages/*` — core libraries (gql-to-mcp)
+- `agentic-commerce` — agentic commerce MCP server (port 6274)
+- `loyalty-mcp` — loyalty MCP server (port 6275)
 - `examples` — usage examples
+
+### Build & Run
+
+```bash
+# Build all packages
+npm run build
+
+# Run both servers in parallel
+npm run dev:all
+
+# Run individual servers
+npm run dev:agentic   # Agentic commerce
+npm run dev:loyalty   # Loyalty
+```
+
+See [SETUP.md](./SETUP.md) and [LERNA-GUIDE.md](./LERNA-GUIDE.md) for detailed commands.
