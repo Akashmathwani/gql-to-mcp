@@ -1,0 +1,9 @@
+{
+  "watch": ["src"],
+  "ext": "ts,json,graphql",
+  "ignore": ["src/**/*.spec.ts"],
+  "exec": "ts-node -r ./dotenv-config.js src/index.ts",
+  "env": {
+    "NODE_ENV": "development"
+  }
+}
