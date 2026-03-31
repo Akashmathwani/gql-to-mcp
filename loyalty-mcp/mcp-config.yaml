@@ -1,0 +1,81 @@
+server_info:
+  name: loyalty-mcp
+  version: 0.1.0
+  title: Loyalty MCP Server
+
+# ── GraphQL endpoint ──────────────────────────────────────────────────────────
+endpoint: '${env.GRAPHQL_ENDPOINT}'
+
+# ── Static headers ────────────────────────────────────────────────────────────
+headers:
+  x-client-name: loyalty-mcp
+  x-api-key: '${env.X_API_KEY}'
+
+# ── Header forwarding ─────────────────────────────────────────────────────────
+forward_headers:
+  - authorization
+  - x-tesco-uid
+  - x-tesco-store-id
+  - x-customer-id
+  - traceparent
+  - tracestate
+  - traceId
+  - x-api-key
+
+# ── Transport ─────────────────────────────────────────────────────────────────
+transport:
+  type: streamable_http
+  port: 6275
+  address: localhost
+
+  cors:
+    origins:
+      - http://localhost:6275 # MCP Inspector
+      - http://localhost:8000
+
+  # Auth — disabled for local dev; enable for production
+  # auth:
+  #   enabled: true
+  #   issuers:
+  #     - https://login.microsoftonline.com/${env.AZURE_TENANT_ID}/v2.0
+  #   audience: ${env.API_AUDIENCE}
+  #   allow_anonymous_tools:
+  #     - get_points_balance
+  #     - list_rewards
+
+# ── Schema ────────────────────────────────────────────────────────────────────
+# Disable GraphQL file-based tools for now — only custom tools are active.
+# Uncomment schema + operations when you want to add .graphql operation tools.
+# schema:
+#   source: local
+#   path: ./schema.graphql
+
+# operations:
+#   dirs:
+#     - ./operations
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+telemetry:
+  enabled: true
+  service_name: loyalty-mcp
+  service_version: 1.0.0
+  exporters:
+    tracing:
+      otlp:
+        endpoint: ${env.NEW_RELIC_OTLP_ENDPOINT}
+        headers:
+          api-key: ${env.NEW_RELIC_LICENSE_KEY}
+
+logging:
+  level: debug
+  format: json # temporarily using json to avoid pino worker thread crashes
+  redact:
+    - headers.authorization
+    - jwt.sub
+    - customer.email
+    - customer.phone
+
+# ── Health check ──────────────────────────────────────────────────────────────
+health_check:
+  enabled: true
+  path: /health
