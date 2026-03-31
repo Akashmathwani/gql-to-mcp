@@ -1,43 +1,34 @@
-// GraphQL response types for vouchers query
+// GraphQL response types for reward vouchers query
 
 export type GqlRedemptionDetails = {
-  id?: string | null;
   redeemedOn?: string | null;
-  type?: string | null;
-  location?: string | null;
   locationId?: string | null;
   locationUuid?: string | null;
+  reference?: string | null;
+  description?: string | null;
+};
+
+export type GqlPromotionDetails = {
+  type?: string | null;
+  subType?: string | null;
 };
 
 export type GqlVoucherDetails = {
   id?: string | null;
+  alphaNumericId?: string | null;
+  value?: number | null;
   description?: string | null;
+  expiry?: string | null;
   validFrom?: string | null;
-  expiryDate?: string | null;
-  state?: string | null;
-  scannableCode?: string | null;
+  maxRedemptionsAllowed?: number | null;
   redemptionsLeft?: number | null;
-  maxRedemptionsLimit?: number | null;
-  type?: string | null;
-  value?: string | null;
-  keyInCode?: string | null;
+  promotionId?: string | null;
   redemptionDetails?: Array<GqlRedemptionDetails | null> | null;
+  promotionDetails?: GqlPromotionDetails | null;
 };
 
-export type GqlVoucherSummary = {
-  available?: number | null;
-  issued?: number | null;
-  spent?: number | null;
-};
-
-export type GqlVouchers = {
-  summary?: GqlVoucherSummary | null;
-  list?: Array<GqlVoucherDetails | null> | null;
-};
-
-export type GqlCurrency = {
-  iso?: string | null;
-  symbol?: string | null;
+export type GqlScheme = {
+  vouchers?: Array<GqlVoucherDetails | null> | null;
 };
 
 export type GqlError = {
@@ -49,9 +40,7 @@ export type GqlError = {
 
 export type GqlGetVouchersResponse = {
   loyalty?: {
-    vouchers?: GqlVouchers | null;
-    vouchersTotalValue?: number | null;
-    currency?: GqlCurrency | null;
+    schemes?: Array<GqlScheme | null> | null;
     errors?: Array<GqlError | null> | null;
   } | null;
 };

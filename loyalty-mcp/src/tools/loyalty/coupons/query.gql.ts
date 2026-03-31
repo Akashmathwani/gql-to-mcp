@@ -7,8 +7,6 @@ export const GET_COUPONS_QUERY = /* GraphQL */ `
     $language: String
     $application: String
     $channel: ChannelType
-    $couponIdList: [String!]
-    $filters: LoyaltyCouponsFilterInput
   ) {
     loyalty(
       business: $business
@@ -17,7 +15,7 @@ export const GET_COUPONS_QUERY = /* GraphQL */ `
       application: $application
       channel: $channel
     ) {
-      coupons(couponIdList: $couponIdList, filters: $filters) {
+      coupons {
         id
         uuid
         alphaNumericId
@@ -43,12 +41,7 @@ export const GET_COUPONS_QUERY = /* GraphQL */ `
           subType
         }
       }
-      couponsSummary {
-        available {
-          uniqueCount
-          redeemableCount
-        }
-      }
+     
       errors {
         name
         message

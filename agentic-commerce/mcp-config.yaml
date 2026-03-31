@@ -9,6 +9,7 @@ endpoint: '${env.GRAPHQL_ENDPOINT}'
 # ── Static headers ────────────────────────────────────────────────────────────
 headers:
   x-client-name: agentic-commerce-mcp
+  x-api-key: '${env.X_API_KEY}'
 
 # ── Header forwarding ─────────────────────────────────────────────────────────
 forward_headers:
@@ -22,7 +23,7 @@ forward_headers:
 # ── Transport ─────────────────────────────────────────────────────────────────
 transport:
   type: streamable_http
-  port: 3000
+  port: 6274
   address: localhost
 
   cors:

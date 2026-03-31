@@ -1,54 +1,34 @@
-// GraphQL query for fetching loyalty vouchers
+// GraphQL query for fetching loyalty reward vouchers
 
 export const GET_VOUCHERS_QUERY = /* GraphQL */ `
-  query GetVouchers(
-    $business: String
-    $region: String
-    $language: String
-    $application: String
-    $channel: ChannelType
-    $filters: LoyaltyVoucherFiltersInput
-    $detailsFilters: LoyaltyVoucherDetailsFiltersInput
+  query GetRewardVouchers(
+    $schemes: [loyaltySchemeInputType]
+    $loyaltyContexts: [LoyaltyContextType]
   ) {
-    loyalty(
-      business: $business
-      region: $region
-      language: $language
-      application: $application
-      channel: $channel
-    ) {
-      vouchers(filters: $filters) {
-        summary {
-          available
-          issued
-          spent
-        }
-        list(filters: $detailsFilters) {
+    loyalty(schemes: $schemes, loyaltyContexts: $loyaltyContexts) {
+      schemes {
+        vouchers {
           id
-          description
-          validFrom
-          expiryDate
-          state
-          scannableCode
-          redemptionsLeft
-          maxRedemptionsLimit
-          type
+          alphaNumericId
           value
-          keyInCode
+          description
+          expiry
+          validFrom
+          maxRedemptionsAllowed
+          redemptionsLeft
+          promotionId
           redemptionDetails {
-            id
             redeemedOn
-            type
-            location
             locationId
             locationUuid
+            reference
+            description
+          }
+          promotionDetails {
+            type
+            subType
           }
         }
-      }
-      vouchersTotalValue
-      currency {
-        iso
-        symbol
       }
       errors {
         name
