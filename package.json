@@ -6,7 +6,8 @@
   "workspaces": [
     "packages/*",
     "examples",
-    "agentic-commerce"
+    "agentic-commerce",
+    "loyalty-mcp"
   ],
   "scripts": {
     "build": "npm run build --workspaces",
