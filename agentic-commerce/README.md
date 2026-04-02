@@ -98,6 +98,7 @@ The server will start on `http://localhost:3000` with:
 Edit `mcp-config.yaml` to customize server behavior.
 
 **Key settings:**
+
 - **Logging**: Set `level` (debug/info/warn/error) and `format` (json/pretty)
 - **Telemetry**: Configure New Relic OTLP endpoint
 - **Transport**: Change port or address
