@@ -64,7 +64,6 @@ export interface JwtPayload {
   /** Session ID */
   sid?: string;
 
-  /** Tesco-specific: authentication confidence level */
   confidence_level?: number;
 
   /** Roles — may be present as a custom claim */

@@ -1,3 +1,4 @@
+import * as path from 'path';
 import { resolveConfig } from './config/config-loader';
 import { createLogger } from './logger/index.js';
 import { loadSchema } from './schema-loader.js';
@@ -50,63 +51,26 @@ export interface CreateMcpServerOptions extends PublicMcpServerOptions {
  * Loads config → schema → operations → registers all tools, resources, prompts
  * → returns a server instance with start() and stop().
  *
- * @example
- * ```typescript
- * import { createMcpServer, promptBuilder } from 'gql-mcp';
- *
- * const server = createMcpServer({
- *   config: './mcp-config.yaml',
- *
- *   // Custom multi-step tool
- *   tools: [{
- *     name: 'getCustomerBuylistWithPrices',
- *     description: 'Fetches a customer buylist and enriches each item with live pricing',
- *     inputSchema: {
- *       type: 'object',
- *       properties: {
- *         customerId: { type: 'string' },
- *         listId: { type: 'string' },
- *       },
- *       required: ['customerId', 'listId'],
- *     },
- *     async execute(args, ctx) {
- *       const list = await ctx.gql(GET_BUYLIST, { customerId: args.customerId });
- *       const prices = await ctx.gql(GET_PRICES, { skus: list.data.items.map(i => i.sku) });
- *       return { ...list.data, items: list.data.items.map((item, i) => ({ ...item, price: prices.data[i] })) };
- *     },
- *   }],
- *
- *   // MCP Resource
- *   resources: [{
- *     uri: 'tesco://schema/graphql',
- *     name: 'GraphQL Schema',
- *     description: 'Full xAPI GraphQL federation schema in SDL format',
- *     mimeType: 'text/plain',
- *     async load() {
- *       return { type: 'text', text: fs.readFileSync('./schema.graphql', 'utf-8') };
- *     },
- *   }],
- *
- *   // MCP Prompt
- *   prompts: [{
- *     name: 'investigate_ticket',
- *     description: 'Start a structured Zendesk ticket investigation',
- *     arguments: [{ name: 'ticketId', description: 'Zendesk ticket ID', required: true }],
- *     render(args) {
- *       return promptBuilder()
- *         .user(`Investigate Zendesk ticket #${args.ticketId}. Start by fetching the ticket details, then check for related errors in New Relic from the last 2 hours.`)
- *         .assistant('I will start by fetching the ticket details.')
- *         .build();
- *     },
- *   }],
- * });
- *
- * await server.start();
+
  * ```
  */
 function createMcpServer(options: CreateMcpServerOptions): PublicMcpServer {
   // ── Step 1: Config ─────────────────────────────────────────────────────────
   const config = resolveConfig(options.config);
+
+  // Resolve relative paths in schema and operations against the config file's
+  // directory so that `./schema.graphql` works regardless of CWD.
+  const configDir =
+    typeof options.config === 'string' ? path.dirname(path.resolve(options.config)) : process.cwd();
+
+  if (config.schema?.path && !path.isAbsolute(config.schema.path)) {
+    config.schema.path = path.resolve(configDir, config.schema.path);
+  }
+  if (config.operations?.dirs) {
+    config.operations.dirs = config.operations.dirs.map((d) =>
+      path.isAbsolute(d) ? d : path.resolve(configDir, d)
+    );
+  }
 
   const telemetryStarted = setupTelemetry(config.telemetry);
 

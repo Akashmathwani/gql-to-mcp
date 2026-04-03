@@ -1,0 +1,69 @@
+# Add or update an anime/manga entry on the authenticated user's list.
+# Requires an authenticated user (Authorization header with a valid AniList token).
+#
+# Arguments:
+#   mediaId         (required): AniList ID of the media to track
+#   status          (optional): CURRENT | PLANNING | COMPLETED | DROPPED | PAUSED | REPEATING
+#   score           (optional): Score in the user's chosen format (e.g. 8.5 for POINT_10_DECIMAL)
+#   progress        (optional): Episodes watched / chapters read
+#   progressVolumes (optional): Volumes read (manga only)
+#   repeat          (optional): Number of times rewatched/reread
+#   notes           (optional): Private notes about the media
+#
+# Returns: The saved list entry with media details
+
+mutation SaveMediaListEntry(
+  $mediaId: Int
+  $status: MediaListStatus
+  $score: Float
+  $progress: Int
+  $progressVolumes: Int
+  $repeat: Int
+  $notes: String
+) {
+  SaveMediaListEntry(
+    mediaId: $mediaId
+    status: $status
+    score: $score
+    progress: $progress
+    progressVolumes: $progressVolumes
+    repeat: $repeat
+    notes: $notes
+  ) {
+    id
+    mediaId
+    status
+    score
+    progress
+    progressVolumes
+    repeat
+    notes
+    startedAt {
+      year
+      month
+      day
+    }
+    completedAt {
+      year
+      month
+      day
+    }
+    updatedAt
+    createdAt
+    media {
+      id
+      title {
+        romaji
+        english
+      }
+      type
+      format
+      episodes
+      chapters
+      coverImage {
+        medium
+      }
+      averageScore
+    }
+  }
+}

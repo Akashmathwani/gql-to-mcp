@@ -7,10 +7,11 @@
     "dev": "gql-mcp ./mcp-config.yaml",
     "start": "gql-mcp ./mcp-config.yaml",
     "simple-custom": "ts-node --project tsconfig.json simple-custom-tool.ts",
-    "generate-openrpc": "ts-node --project tsconfig.json scripts/generate-openrpc.ts"
+    "generate-openrpc": "ts-node --project tsconfig.json scripts/generate-openrpc.ts",
+    "fetch-schema": "ts-node --project tsconfig.json scripts/fetch-schema.ts"
   },
   "dependencies": {
-    "gql-to-mcp": "*"
+    "gql-to-mcp": "^0.1.1"
   },
   "devDependencies": {
     "@types/node": "^20.19.37",

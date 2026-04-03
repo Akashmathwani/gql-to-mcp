@@ -5,19 +5,11 @@
   "description": "GraphQL MCP workspace",
   "workspaces": [
     "packages/*",
-    "examples",
-    "agentic-commerce",
-    "loyalty-mcp"
+    "examples"
   ],
   "scripts": {
     "build": "lerna run build",
     "build:packages": "lerna run build --scope='gql-to-mcp'",
-    "build:servers": "lerna run build --scope='{agentic-commerce,loyalty-mcp}'",
-    "dev:agentic": "lerna run dev --scope=agentic-commerce --stream",
-    "dev:loyalty": "lerna run dev --scope=loyalty-mcp --stream",
-    "dev": "lerna run dev --parallel --scope='{agentic-commerce,loyalty-mcp}' --stream",
-    "start:agentic": "lerna run start --scope=agentic-commerce --stream",
-    "start:loyalty": "lerna run start --scope=loyalty-mcp --stream",
     "clean": "lerna run clean --parallel",
     "lint": "lerna run lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",

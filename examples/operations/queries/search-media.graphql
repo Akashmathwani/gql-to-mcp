@@ -1,0 +1,76 @@
+# Search for anime or manga by title, genre, or other criteria.
+# Use this when you need to discover media without knowing the exact ID.
+#
+# Arguments:
+#   search  (optional): Title keyword to search for (e.g., "Attack on Titan")
+#   type    (optional): ANIME or MANGA (defaults to ANIME)
+#   genre   (optional): Filter by genre (e.g., "Action", "Romance")
+#   page    (optional): Page number for pagination (default: 1)
+#   perPage (optional): Results per page, max 50 (default: 10)
+#
+# Returns: Paginated list of matching media with key details
+
+query SearchMedia(
+  $search: String
+  $type: MediaType
+  $genre: String
+  $page: Int
+  $perPage: Int
+) {
+  Page(page: $page, perPage: $perPage) {
+    pageInfo {
+      total
+      currentPage
+      lastPage
+      hasNextPage
+      perPage
+    }
+    media(search: $search, type: $type, genre: $genre, sort: [POPULARITY_DESC]) {
+      id
+      idMal
+      title {
+        romaji
+        english
+        native
+      }
+      type
+      format
+      status
+      description(asHtml: false)
+      episodes
+      duration
+      chapters
+      volumes
+      genres
+      averageScore
+      meanScore
+      popularity
+      trending
+      favourites
+      isAdult
+      coverImage {
+        large
+        medium
+        color
+      }
+      bannerImage
+      startDate {
+        year
+        month
+        day
+      }
+      season
+      seasonYear
+      tags {
+        name
+        rank
+        isGeneralSpoiler
+      }
+      nextAiringEpisode {
+        episode
+        airingAt
+        timeUntilAiring
+      }
+    }
+  }
+}

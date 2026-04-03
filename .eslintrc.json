@@ -3,7 +3,7 @@
   "parserOptions": {
     "ecmaVersion": 2022,
     "sourceType": "module",
-    "project": ["./tsconfig.json", "./examples/tsconfig.json", "./agentic-commerce/tsconfig.json", "./packages/gql-mcp/tsconfig.json"]
+    "project": ["./tsconfig.json", "./examples/tsconfig.json"]
   },
   "plugins": ["@typescript-eslint", "prettier"],
   "extends": [

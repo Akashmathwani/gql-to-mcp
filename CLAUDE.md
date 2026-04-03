@@ -16,12 +16,6 @@ The SDK covers: checkout, orders, fulfillment, payments, line items, buyers, pay
 
 **The `@ucp-js/sdk` spec does not include any catalog types.** Catalog schemas (products, SKUs, inventory, pricing, etc.) must be written manually. Create them in:
 
-```
-agentic-commerce/src/tools/ucp/catalog/
-```
-
-When the official catalog spec becomes available in the SDK, replace the hand-written schemas with the generated ones.
-
 ## Repo Structure
 
 This is a **Lerna-managed npm workspaces monorepo**. All shared dependencies are hoisted to the root `node_modules/` — this is intentional.
@@ -29,8 +23,6 @@ This is a **Lerna-managed npm workspaces monorepo**. All shared dependencies are
 Workspaces:
 
 - `packages/*` — core libraries (gql-to-mcp)
-- `agentic-commerce` — agentic commerce MCP server (port 6274)
-- `loyalty-mcp` — loyalty MCP server (port 6275)
 - `examples` — usage examples
 
 ### Build & Run
@@ -42,9 +34,5 @@ npm run build
 # Run both servers in parallel
 npm run dev:all
 
-# Run individual servers
-npm run dev:agentic   # Agentic commerce
-npm run dev:loyalty   # Loyalty
-```
 
 See [SETUP.md](./SETUP.md) and [LERNA-GUIDE.md](./LERNA-GUIDE.md) for detailed commands.

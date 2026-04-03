@@ -5,14 +5,14 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 server_info:
-  name: xapi-mcp
+  name: example-mcp
   version: 0.1.0
-  title: Tesco xAPI MCP Server
+  title: Example MCP Server
 
 # ── GraphQL endpoint ──────────────────────────────────────────────────────────
 # Your GraphQL gateway URL.
 # Use ${env.VAR_NAME} to pull from environment variables.
-endpoint: 'https://origin-ppe1-xapi-gateway.omnichannel.tescocloud.com/graphiql'
+endpoint: 'https://graphql.anilist.co'
 # endpoint: http://localhost:4000/graphql   # ← uncomment for local dev
 
 # ── Static headers ────────────────────────────────────────────────────────────
@@ -28,8 +28,6 @@ headers:
 # Add traceparent here to get end-to-end distributed traces.
 forward_headers:
   - authorization
-  - x-tesco-uid
-  - x-tesco-store-id
   - traceparent
   - tracestate
 
@@ -115,13 +113,12 @@ logging:
   format: pretty # pretty (local dev) | json (production)
   redact:
     - headers.authorization
-    - headers.x-tesco-uid
 
 # ── Telemetry ─────────────────────────────────────────────────────────────────
 # Disabled by default. Uncomment to enable OTLP export to New Relic.
 # telemetry:
 #   enabled: true
-#   service_name: xapi-mcp
+#   service_name: example-mcp
 #   service_version: 0.1.0
 #   exporters:
 #     tracing:

@@ -1,0 +1,173 @@
+# Fetch full details for a single anime or manga by its AniList ID.
+#
+# Arguments:
+#   id   (optional): AniList media ID
+#   type (optional): ANIME or MANGA — disambiguates when only title search is used
+#
+# Returns: Complete media record including characters, staff, studios,
+#          airing schedule, reviews, recommendations, and streaming links
+
+query GetMedia($id: Int, $type: MediaType) {
+  Media(id: $id, type: $type) {
+    id
+    idMal
+    title {
+      romaji
+      english
+      native
+    }
+    type
+    format
+    status
+    description(asHtml: false)
+    startDate {
+      year
+      month
+      day
+    }
+    endDate {
+      year
+      month
+      day
+    }
+    season
+    seasonYear
+    episodes
+    duration
+    chapters
+    volumes
+    countryOfOrigin
+    source
+    hashtag
+    isLicensed
+    isAdult
+    genres
+    synonyms
+    averageScore
+    meanScore
+    popularity
+    favourites
+    trending
+    coverImage {
+      extraLarge
+      large
+      medium
+      color
+    }
+    bannerImage
+    tags {
+      id
+      name
+      description
+      category
+      rank
+      isGeneralSpoiler
+      isMediaSpoiler
+      isAdult
+    }
+    characters(sort: [ROLE, RELEVANCE], perPage: 6) {
+      edges {
+        role
+        node {
+          id
+          name {
+            full
+            native
+          }
+          image {
+            large
+          }
+          description(asHtml: false)
+        }
+        voiceActors(language: JAPANESE) {
+          id
+          name {
+            full
+          }
+          language: languageV2
+          image {
+            large
+          }
+        }
+      }
+    }
+    staff(sort: [RELEVANCE], perPage: 6) {
+      edges {
+        role
+        node {
+          id
+          name {
+            full
+          }
+          image {
+            large
+          }
+        }
+      }
+    }
+    studios(isMain: true) {
+      nodes {
+        id
+        name
+        isAnimationStudio
+      }
+    }
+    nextAiringEpisode {
+      id
+      episode
+      airingAt
+      timeUntilAiring
+    }
+    streamingEpisodes {
+      title
+      thumbnail
+      url
+      site
+    }
+    externalLinks {
+      url
+      site
+      type
+      language
+    }
+    trailer {
+      id
+      site
+    }
+    rankings {
+      rank
+      type
+      format
+      year
+      season
+      allTime
+      context
+    }
+    recommendations(sort: [RATING_DESC], perPage: 5) {
+      nodes {
+        rating
+        mediaRecommendation {
+          id
+          title {
+            romaji
+            english
+          }
+          coverImage {
+            medium
+          }
+          averageScore
+        }
+      }
+    }
+    stats {
+      scoreDistribution {
+        score
+        amount
+      }
+      statusDistribution {
+        status
+        amount
+      }
+    }
+  }
+}

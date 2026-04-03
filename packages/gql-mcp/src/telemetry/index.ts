@@ -21,7 +21,7 @@
  * Config (mcp-config.yaml):
  *   telemetry:
  *     enabled: true
- *     service_name: tesco-commerce-mcp
+ *     service_name: commerce-mcp
  *     service_version: 1.0.0
  *     exporters:
  *       tracing:

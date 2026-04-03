@@ -49,7 +49,7 @@ The custom tools are registered alongside all the `.graphql` operation tools.
 
 The main configuration file is `mcp-config.yaml`, which includes:
 
-- **GraphQL Endpoint**: Points to a Tesco xAPI GraphQL gateway (configured in the yaml)
+- **GraphQL Endpoint**: Points to a GraphQL gateway (configured in the yaml)
 - **Transport**: HTTP server on port 3000 with CORS enabled for MCP Inspector
 - **Schema**: Local GraphQL schema file (`schema.graphql`)
 - **Operations**: GraphQL queries and mutations in the `operations/` directory

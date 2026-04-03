@@ -1,7 +1,7 @@
 {
   "name": "gql-to-mcp",
-  "version": "0.1.0",
-  "description": "Turn your GraphQL operations into MCP tools — with support for custom multi-step tools",
+  "version": "0.1.1",
+  "description": "Turn any GraphQL API into an MCP server. Point it at your schema and operations, get a fully working Model Context Protocol server with zero boilerplate.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
@@ -11,7 +11,7 @@
     "build": "tsc",
     "build:clean": "rm -rf dist && npm run build",
     "clean": "rm -rf dist",
-    "dev": "ts-node src/cli.ts",
+    "dev": "tsx src/cli.ts ../../examples/mcp-config.yaml",
     "lint": "eslint 'src/**/*.ts'",
     "lint:fix": "eslint 'src/**/*.ts' --fix",
     "format": "prettier --write 'src/**/*.{ts,json,md}'",
@@ -22,10 +22,24 @@
   },
   "keywords": [
     "mcp",
+    "model-context-protocol",
+    "mcp-server",
     "graphql",
+    "graphql-tools",
+    "gql",
     "llm",
+    "ai",
+    "ai-agent",
     "agent",
-    "tools"
+    "tools",
+    "tool-use",
+    "claude",
+    "anthropic",
+    "openai",
+    "typescript",
+    "mcp-tools",
+    "graphql-mcp",
+    "agentic"
   ],
   "license": "MIT",
   "author": "",
@@ -82,6 +96,7 @@
     "eslint-plugin-prettier": "^5.1.3",
     "prettier": "^3.2.5",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5.4.0"
   },
   "exports": {
