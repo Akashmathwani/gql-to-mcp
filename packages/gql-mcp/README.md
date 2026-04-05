@@ -126,6 +126,10 @@ npm run type-check
 npm run lint
 ```
 
+## Contributing
+
+Open an issue or pull request on GitHub for bug reports, feature requests, or any proposed changes.
+
 ## License
 
 MIT

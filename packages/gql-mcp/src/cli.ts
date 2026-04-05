@@ -47,7 +47,7 @@ async function main(): Promise<void> {
 
   // ── Flags ──────────────────────────────────────────────────────────────────
   if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
-    console.log(HELP);
+    process.stdout.write(HELP + '\n');
     process.exit(args.length === 0 ? 1 : 0);
   }
 
@@ -55,15 +55,15 @@ async function main(): Promise<void> {
     const pkg = JSON.parse(
       fs.readFileSync(path.join(__dirname, '../../package.json'), 'utf-8')
     ) as { version: string };
-    console.log(pkg.version);
+    process.stdout.write(pkg.version + '\n');
     process.exit(0);
   }
 
   // ── Config path ────────────────────────────────────────────────────────────
   const configArg = args.find((a) => !a.startsWith('--'));
   if (!configArg) {
-    console.error('❌ Error: No config file specified');
-    console.error('   Run gql-mcp --help for usage');
+    process.stderr.write('❌ Error: No config file specified\n');
+    process.stderr.write('   Run gql-mcp --help for usage\n');
     process.exit(1);
   }
 
@@ -72,7 +72,7 @@ async function main(): Promise<void> {
     : path.resolve(process.cwd(), configArg);
 
   if (!fs.existsSync(configPath)) {
-    console.error(`❌ Error: Config file not found: ${configPath}`);
+    process.stderr.write(`❌ Error: Config file not found: ${configPath}\n`);
     process.exit(1);
   }
 
@@ -84,15 +84,17 @@ async function main(): Promise<void> {
 
     // ── Graceful shutdown ────────────────────────────────────────────────────
     const shutdown = (signal: string) => {
-      console.error(`\n⏹  Received ${signal}, shutting down...`);
+      process.stderr.write(`\n⏹  Received ${signal}, shutting down...\n`);
       server
         .stop()
         .then(() => {
-          console.error('✓ Shutdown complete');
+          process.stderr.write('✓ Shutdown complete\n');
           process.exit(0);
         })
         .catch((err: unknown) => {
-          console.error('⚠ Error during shutdown:', err instanceof Error ? err.message : err);
+          process.stderr.write(
+            `⚠ Error during shutdown: ${err instanceof Error ? err.message : String(err)}\n`
+          );
           process.exit(1);
         });
     };
@@ -107,18 +109,18 @@ async function main(): Promise<void> {
     }
   } catch (err) {
     if (err instanceof Error) {
-      console.error(`❌ ${err.message}`);
+      process.stderr.write(`❌ ${err.message}\n`);
       if (process.env['DEBUG']) {
-        console.error(err.stack);
+        process.stderr.write((err.stack ?? '') + '\n');
       }
     } else {
-      console.error('❌ Unknown error during startup');
+      process.stderr.write('❌ Unknown error during startup\n');
     }
     process.exit(1);
   }
 }
 
 main().catch((err: unknown) => {
-  console.error('❌ Fatal:', err instanceof Error ? err.message : err);
+  process.stderr.write(`❌ Fatal: ${err instanceof Error ? err.message : String(err)}\n`);
   process.exit(1);
 });

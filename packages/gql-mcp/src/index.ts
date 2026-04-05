@@ -72,33 +72,39 @@ function createMcpServer(options: CreateMcpServerOptions): PublicMcpServer {
     );
   }
 
+  // ── Step 2: Logger ─────────────────────────────────────────────────────────
+  const logger = createLogger(config.logging, config.server_info?.name);
+
   const telemetryStarted = setupTelemetry(config.telemetry);
 
-  process.stderr.write(
-    `[telemetry] enabled=${String(config.telemetry?.enabled)} started=${String(telemetryStarted)} endpoint=${config.telemetry?.exporters?.tracing?.otlp?.endpoint ?? 'none'}\n`
-  );
+  logger.debug('Telemetry initialised', {
+    enabled: config.telemetry?.enabled,
+    started: telemetryStarted,
+    endpoint: config.telemetry?.exporters?.tracing?.otlp?.endpoint ?? 'none',
+  });
 
-  // ── Step 2: Schema ─────────────────────────────────────────────────────────
+  // ── Step 3: Schema ─────────────────────────────────────────────────────────
   let operationTools: ReturnType<typeof loadOperations>['tools'] = [];
   if (config.schema) {
     const schemaResult = loadSchema({ config: config.schema });
-    console.error(`✓ Schema loaded (${schemaResult.source}) — ${schemaResult.typeCount} types`);
+    logger.info(`Schema loaded (${schemaResult.source}) — ${schemaResult.typeCount} types`);
 
-    // ── Step 3: Operations → tools ───────────────────────────────────────────
+    // ── Step 4: Operations → tools ───────────────────────────────────────────
     const operationsResult = loadOperations({
       schema: schemaResult.schema,
       operationsConfig: config.operations,
       overridesConfig: config.overrides,
       customScalars: config.custom_scalars,
+      logger,
     });
 
     for (const skipped of operationsResult.skipped) {
-      console.error(`  ⚠  Skipped: ${skipped.file} — ${skipped.reason}`);
+      logger.warn(`Skipped: ${skipped.file} — ${skipped.reason}`);
     }
     operationTools = operationsResult.tools;
   }
 
-  // ── Step 4: Tool registry ──────────────────────────────────────────────────
+  // ── Step 5: Tool registry ──────────────────────────────────────────────────
   const toolRegistry = new ToolRegistry();
   toolRegistry.registerOperationTools(operationTools);
 
@@ -107,24 +113,21 @@ function createMcpServer(options: CreateMcpServerOptions): PublicMcpServer {
   }
 
   const { total, operations, custom } = toolRegistry.getToolCount();
-  console.error(`✓ Tools registered — ${total} total (${operations} operations, ${custom} custom)`);
+  logger.info(`Tools registered — ${total} total (${operations} operations, ${custom} custom)`);
 
-  // ── Step 5: Resource registry ──────────────────────────────────────────────
+  // ── Step 6: Resource registry ──────────────────────────────────────────────
   const resourceRegistry = new ResourceRegistry();
   if (options.resources && options.resources.length > 0) {
     resourceRegistry.registerAll(options.resources);
-    console.error(`✓ Resources registered — ${resourceRegistry.getResourceCount()}`);
+    logger.info(`Resources registered — ${resourceRegistry.getResourceCount()}`);
   }
 
-  // ── Step 6: Prompt registry ────────────────────────────────────────────────
+  // ── Step 7: Prompt registry ────────────────────────────────────────────────
   const promptRegistry = new PromptRegistry();
   if (options.prompts && options.prompts.length > 0) {
     promptRegistry.registerAll(options.prompts);
-    console.error(`✓ Prompts registered — ${promptRegistry.getPromptCount()}`);
+    logger.info(`Prompts registered — ${promptRegistry.getPromptCount()}`);
   }
-
-  // ── Step 7: Logger ─────────────────────────────────────────────────────────
-  const logger = createLogger(config.logging, config.server_info?.name);
 
   // ── Step 8: GQL client ─────────────────────────────────────────────────────
   const gqlClient = new GqlClient({

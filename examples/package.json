@@ -11,7 +11,7 @@
     "fetch-schema": "ts-node --project tsconfig.json scripts/fetch-schema.ts"
   },
   "dependencies": {
-    "gql-to-mcp": "^0.1.1"
+    "gql-to-mcp": "^0.1.3"
   },
   "devDependencies": {
     "@types/node": "^20.19.37",

@@ -26,6 +26,8 @@ import type {
   JsonSchemaProperty,
 } from './types/index.js';
 import { StartupValidationError } from './types/index.js';
+import type { ILogger } from './logger/index.js';
+import { noopLogger } from './logger/index.js';
 
 /**
  * Operation loader — globs .graphql files, parses, validates, extracts variables,
@@ -51,6 +53,7 @@ export interface OperationLoaderOptions {
   operationsConfig: OperationsConfig;
   overridesConfig?: OverridesConfig;
   customScalars?: Record<string, JsonSchemaProperty>;
+  logger?: ILogger;
 }
 
 export interface OperationLoadResult {
@@ -59,7 +62,7 @@ export interface OperationLoadResult {
 }
 
 export function loadOperations(options: OperationLoaderOptions): OperationLoadResult {
-  const { schema, operationsConfig, overridesConfig, customScalars } = options;
+  const { schema, operationsConfig, overridesConfig, customScalars, logger = noopLogger } = options;
   const mutationMode = overridesConfig?.mutation_mode ?? 'none';
 
   const tools: ToolDefinition[] = [];
@@ -87,6 +90,7 @@ export function loadOperations(options: OperationLoaderOptions): OperationLoadRe
         mutationMode,
         overridesConfig,
         customScalars,
+        logger,
       });
 
       if (tool === null) {
@@ -122,8 +126,9 @@ function loadOperation(options: {
   mutationMode: 'none' | 'explicit';
   overridesConfig?: OverridesConfig;
   customScalars?: Record<string, JsonSchemaProperty>;
+  logger: ILogger;
 }): ToolDefinition | null {
-  const { filePath, schema, mutationMode, overridesConfig, customScalars } = options;
+  const { filePath, schema, mutationMode, overridesConfig, customScalars, logger } = options;
 
   const source = readFile(filePath);
   const document = parseDocument(source);
@@ -144,7 +149,7 @@ function loadOperation(options: {
   const variableComments = extractVariableComments(source);
 
   const variables = operation.variableDefinitions ?? [];
-  const inputSchema = buildInputSchema(variables, schema, customScalars, variableComments);
+  const inputSchema = buildInputSchema(variables, schema, customScalars, variableComments, logger);
   const documentHash = computeDocumentHash(source);
   const description = resolveOperationDescription({
     operationName,
@@ -223,14 +228,20 @@ function buildInputSchema(
   variables: readonly VariableDefinitionNode[],
   schema: GraphQLSchema,
   customScalars: Record<string, JsonSchemaProperty> | undefined,
-  variableComments: Record<string, string>
+  variableComments: Record<string, string>,
+  logger: ILogger
 ): ToolInputSchema {
   const properties: Record<string, JsonSchemaProperty> = {};
   const required: string[] = [];
 
   for (const varDef of variables) {
     const varName = varDef.variable.name.value;
-    const { jsonSchema, isRequired } = mapGraphQLTypeNode(varDef.type, schema, customScalars);
+    const { jsonSchema, isRequired } = mapGraphQLTypeNode(
+      varDef.type,
+      schema,
+      customScalars,
+      logger
+    );
 
     // Apply description from comment or schema — comment wins
     const description = resolveVariableDescription(varName, varDef, schema, variableComments);
@@ -296,15 +307,16 @@ function unwrapTypeName(typeNode: VariableDefinitionNode['type']): string | unde
 function mapGraphQLTypeNode(
   typeNode: VariableDefinitionNode['type'],
   schema: GraphQLSchema,
-  customScalars?: Record<string, JsonSchemaProperty>
+  customScalars: Record<string, JsonSchemaProperty> | undefined,
+  logger: ILogger
 ): { jsonSchema: JsonSchemaProperty; isRequired: boolean } {
   if (typeNode.kind === Kind.NON_NULL_TYPE) {
-    const inner = mapGraphQLTypeNode(typeNode.type, schema, customScalars);
+    const inner = mapGraphQLTypeNode(typeNode.type, schema, customScalars, logger);
     return { jsonSchema: inner.jsonSchema, isRequired: true };
   }
 
   if (typeNode.kind === Kind.LIST_TYPE) {
-    const inner = mapGraphQLTypeNode(typeNode.type, schema, customScalars);
+    const inner = mapGraphQLTypeNode(typeNode.type, schema, customScalars, logger);
     return { jsonSchema: { type: 'array', items: inner.jsonSchema }, isRequired: false };
   }
 
@@ -319,7 +331,7 @@ function mapGraphQLTypeNode(
     }
 
     if (isScalarType(gqlType)) {
-      return { jsonSchema: mapBuiltinScalar(typeName), isRequired: false };
+      return { jsonSchema: mapBuiltinScalar(typeName, logger), isRequired: false };
     }
 
     if (isEnumType(gqlType)) {
@@ -339,7 +351,12 @@ function mapGraphQLTypeNode(
       const required: string[] = [];
 
       for (const [fieldName, field] of Object.entries(fields)) {
-        const { jsonSchema, isRequired } = mapGraphQLRuntimeType(field.type, schema, customScalars);
+        const { jsonSchema, isRequired } = mapGraphQLRuntimeType(
+          field.type,
+          schema,
+          customScalars,
+          logger
+        );
         if (field.description) jsonSchema.description = field.description;
         properties[fieldName] = jsonSchema;
         if (isRequired) required.push(fieldName);
@@ -363,15 +380,16 @@ function mapGraphQLTypeNode(
 function mapGraphQLRuntimeType(
   gqlType: GraphQLType,
   schema: GraphQLSchema,
-  customScalars?: Record<string, JsonSchemaProperty>
+  customScalars: Record<string, JsonSchemaProperty> | undefined,
+  logger: ILogger
 ): { jsonSchema: JsonSchemaProperty; isRequired: boolean } {
   if (isNonNullType(gqlType)) {
-    const inner = mapGraphQLRuntimeType(gqlType.ofType, schema, customScalars);
+    const inner = mapGraphQLRuntimeType(gqlType.ofType, schema, customScalars, logger);
     return { jsonSchema: inner.jsonSchema, isRequired: true };
   }
 
   if (isListType(gqlType)) {
-    const inner = mapGraphQLRuntimeType(gqlType.ofType, schema, customScalars);
+    const inner = mapGraphQLRuntimeType(gqlType.ofType, schema, customScalars, logger);
     return { jsonSchema: { type: 'array', items: inner.jsonSchema }, isRequired: false };
   }
 
@@ -383,7 +401,7 @@ function mapGraphQLRuntimeType(
   }
 
   if (isScalarType(namedType)) {
-    return { jsonSchema: mapBuiltinScalar(typeName), isRequired: false };
+    return { jsonSchema: mapBuiltinScalar(typeName, logger), isRequired: false };
   }
 
   if (isEnumType(namedType)) {
@@ -403,7 +421,12 @@ function mapGraphQLRuntimeType(
     const required: string[] = [];
 
     for (const [fieldName, field] of Object.entries(fields)) {
-      const { jsonSchema, isRequired } = mapGraphQLRuntimeType(field.type, schema, customScalars);
+      const { jsonSchema, isRequired } = mapGraphQLRuntimeType(
+        field.type,
+        schema,
+        customScalars,
+        logger
+      );
       if (field.description) jsonSchema.description = field.description;
       properties[fieldName] = jsonSchema;
       if (isRequired) required.push(fieldName);
@@ -427,7 +450,7 @@ function mapGraphQLRuntimeType(
 // Scalar mapping
 // ─────────────────────────────────────────────────────────────────────────────
 
-function mapBuiltinScalar(scalarName: string): JsonSchemaProperty {
+function mapBuiltinScalar(scalarName: string, logger: ILogger): JsonSchemaProperty {
   switch (scalarName) {
     case 'String':
       return { type: 'string' };
@@ -440,8 +463,8 @@ function mapBuiltinScalar(scalarName: string): JsonSchemaProperty {
     case 'ID':
       return { type: 'string' };
     default:
-      console.error(
-        `⚠ Unknown scalar "${scalarName}" — falling back to string. ` +
+      logger.warn(
+        `Unknown scalar "${scalarName}" — falling back to string. ` +
           `Add it to custom_scalars in config to suppress this warning.`
       );
       return { type: 'string' };
